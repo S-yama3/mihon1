@@ -72,7 +72,7 @@ function generateQR() {
     const found = sheetData.find(item => item.id.toUpperCase() === searchVal);
 
     // 結果表示
-    document.getElementById("inputValue").innerText = "入力ID: " + inputVal;
+    document.getElementById("inputValue").innerText = "見本市コード: " + inputVal;
 
     if (found) {
         // QR生成
@@ -80,14 +80,15 @@ function generateQR() {
         QRCode.toCanvas(document.getElementById("qrcode"), inputVal, { width: 200 }, function(error) {
             if (error) console.error(error);
         });
-        document.getElementById("sheetValue").innerText = "対応値: " + found.value;
+        document.getElementById("sheetValue").innerText = "お客様名: " + found.value;
     } else {
         // QRは作らず未登録表示
         document.getElementById("qrcode").innerHTML = "";
-        document.getElementById("sheetValue").innerText = "未登録です";
+        document.getElementById("sheetValue").innerText = "未登録のコードが入力されています";
     }
 }
 </script>
 
 </body>
 </html>
+
