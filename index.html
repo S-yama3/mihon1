@@ -23,14 +23,13 @@
 
 <h2>IDを入力</h2>
 <input type="text" id="userid" placeholder="半角英数字で入力">
-<button id="generateBtn" disabled onclick="generateQR()">QR生成</button>
+<button id="generateBtn" disabled>QR生成</button>
 
 <div id="qrcode"></div>
 <div id="inputValue"></div>
 <div id="sheetValue"></div>
 
 <script>
-// CSV URL（スプレッドシート公開CSVをここに設定）
 const csvURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQZvuoqelNmRp5XOVgl-0gT6FoV0GVW4zlhJYCr4GWlZHYG3eN_0tXAoDvJ9EUJ3LLDdi6HBr0VPj-9/pub?output=csv";
 
 let sheetData = [];
@@ -44,15 +43,17 @@ fetch(csvURL)
           const [id, value] = line.split(",");
           return {id: id.trim(), value: value ? value.trim() : ""};
       });
-      // CSV読み込み完了後にボタン有効化
       document.getElementById("generateBtn").disabled = false;
   })
   .catch(err => console.error("CSV取得エラー:", err));
 
-// 半角チェック関数
+// 半角チェック
 function isHalfWidth(str) {
     return /^[\x20-\x7E]+$/.test(str);
 }
+
+// ボタンにイベント追加（非同期読み込み後に有効化）
+document.getElementById("generateBtn").addEventListener("click", generateQR);
 
 function generateQR() {
     const inputVal = document.getElementById("userid").value.trim();
@@ -71,24 +72,28 @@ function generateQR() {
     const searchVal = inputVal.toUpperCase();
     const found = sheetData.find(item => item.id.toUpperCase() === searchVal);
 
-    // 結果表示
-    document.getElementById("inputValue").innerText = "見本市コード: " + inputVal;
+    // 入力ID表示
+    document.getElementById("inputValue").innerText = "入力ID: " + inputVal;
 
     if (found) {
         // QR生成
-        document.getElementById("qrcode").innerHTML = "";
-        QRCode.toCanvas(document.getElementById("qrcode"), inputVal, { width: 200 }, function(error) {
-            if (error) console.error(error);
+        const qrcodeDiv = document.getElementById("qrcode");
+        qrcodeDiv.innerHTML = ""; // 前のQRをクリア
+        QRCode.toCanvas(inputVal, { width: 250 }, function(err, canvas) {
+            if (err) {
+                console.error(err);
+                alert("QR生成エラー");
+                return;
+            }
+            qrcodeDiv.appendChild(canvas);
         });
-        document.getElementById("sheetValue").innerText = "お客様名: " + found.value;
+        document.getElementById("sheetValue").innerText = "対応値: " + found.value;
     } else {
-        // QRは作らず未登録表示
         document.getElementById("qrcode").innerHTML = "";
-        document.getElementById("sheetValue").innerText = "未登録のコードが入力されています";
+        document.getElementById("sheetValue").innerText = "未登録です";
     }
 }
 </script>
 
 </body>
 </html>
-
