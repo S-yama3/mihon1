@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>入場QR生成</title>
+<script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+<style>
+  body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    flex-direction: column;
+    font-family: sans-serif;
+  }
+  #qrcode { margin-bottom: 20px; }
+  input { font-size: 16px; padding: 5px; margin-bottom: 10px; }
+  button { font-size: 16px; padding: 5px 10px; }
+  #inputValue, #sheetValue { margin-top: 5px; font-size: 18px; }
+</style>
+</head>
+<body>
+
+<h2>IDを入力</h2>
+<input type="text" id="userid" placeholder="IDを入力">
+<button onclick="generateQR()">QR生成</button>
+
+<div id="qrcode"></div>
+<div id="inputValue"></div>
+<div id="sheetValue"></div>
+
+<script>
+// 公開CSVのURLを指定
+const csvURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQZvuoqelNmRp5XOVgl-0gT6FoV0GVW4zlhJYCr4GWlZHYG3eN_0tXAoDvJ9EUJ3LLDdi6HBr0VPj-9/pub?output=csv";
+
+let sheetData = [];
+
+// CSVを取得して配列に変換
+fetch(csvURL)
+  .then(res => res.text())
+  .then(csvText => {
+      const lines = csvText.trim().split("\n");
+      sheetData = lines.map(line => {
+          const [id, value] = line.split(",");
+          return {id: id.trim(), value: value ? value.trim() : ""};
+      });
+  })
+  .catch(err => console.error("CSV取得エラー:", err));
+
+function generateQR() {
+    const id = document.getElementById("userid").value.trim();
+    if (!id) {
+        alert("IDを入力してください");
+        return;
+    }
+
+    // QR生成
+    document.getElementById("qrcode").innerHTML = "";
+    QRCode.toCanvas(document.getElementById("qrcode"), id, function(error) {
+        if (error) console.error(error);
+    });
+
+    // 入力ID表示
+    document.getElementById("inputValue").innerText = "入力ID: " + id;
+
+    // B列値を検索して表示
+    const found = sheetData.find(item => item.id === id);
+    document.getElementById("sheetValue").innerText = found ? "対応値: " + found.value : "対応値なし";
+}
+</script>
+
+</body>
+</html>
