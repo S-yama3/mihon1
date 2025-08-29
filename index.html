@@ -30,6 +30,7 @@
 <div id="sheetValue"></div>
 
 <script>
+// スプレッドシートCSV URL
 const csvURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQZvuoqelNmRp5XOVgl-0gT6FoV0GVW4zlhJYCr4GWlZHYG3eN_0tXAoDvJ9EUJ3LLDdi6HBr0VPj-9/pub?output=csv";
 
 let sheetData = [];
@@ -43,6 +44,7 @@ fetch(csvURL)
           const [id, value] = line.split(",");
           return {id: id.trim(), value: value ? value.trim() : ""};
       });
+      // CSV読み込み完了後にボタン有効化
       document.getElementById("generateBtn").disabled = false;
   })
   .catch(err => console.error("CSV取得エラー:", err));
@@ -52,7 +54,7 @@ function isHalfWidth(str) {
     return /^[\x20-\x7E]+$/.test(str);
 }
 
-// ボタンにイベント追加（非同期読み込み後に有効化）
+// ボタンイベント
 document.getElementById("generateBtn").addEventListener("click", generateQR);
 
 function generateQR() {
@@ -76,10 +78,10 @@ function generateQR() {
     document.getElementById("inputValue").innerText = "入力ID: " + inputVal;
 
     if (found) {
-        // QR生成
+        // QR生成（大文字化）
         const qrcodeDiv = document.getElementById("qrcode");
-        qrcodeDiv.innerHTML = ""; // 前のQRをクリア
-        QRCode.toCanvas(inputVal, { width: 250 }, function(err, canvas) {
+        qrcodeDiv.innerHTML = "";
+        QRCode.toCanvas(inputVal.toUpperCase(), { width: 250 }, function(err, canvas) {
             if (err) {
                 console.error(err);
                 alert("QR生成エラー");
@@ -89,6 +91,7 @@ function generateQR() {
         });
         document.getElementById("sheetValue").innerText = "対応値: " + found.value;
     } else {
+        // 未登録時
         document.getElementById("qrcode").innerHTML = "";
         document.getElementById("sheetValue").innerText = "未登録です";
     }
