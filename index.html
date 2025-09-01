@@ -34,7 +34,7 @@
 </head>
 <body>
 
-<h2>ID入力</h2>
+<h2>見本市コードを入力して下さい</h2>
 <input type="text" id="userid" placeholder="半角英数字で入力">
 
 <div id="buttonArea">
@@ -89,19 +89,26 @@ function generateQR() {
     QRCode.toCanvas(inputVal.toUpperCase(), { width: 250 }, function(err, qrCanvas){
         if(err) return console.error(err);
 
-        // 新しいCanvas作成してQRをコピー
+        // Canvas作成してQRをコピー
         const canvas = document.createElement("canvas");
         const ctx = canvas.getContext("2d");
+
+        // 文字領域を2行分確保
         canvas.width = qrCanvas.width;
-        canvas.height = qrCanvas.height + 40; // 下に文字スペース
+        canvas.height = qrCanvas.height + 40*2;
+
         ctx.drawImage(qrCanvas, 0, 0);
 
-        // 対応値を下に描画
+        ctx.font = "16px sans-serif";
+        ctx.fillStyle = "black";
+        ctx.textAlign = "center";
+
+        // 1行目：入力ID
+        ctx.fillText(inputVal.toUpperCase(), canvas.width/2, qrCanvas.height + 20);
+
+        // 2行目：スプレッドシートの値
         if(found){
-            ctx.font = "16px sans-serif";
-            ctx.fillStyle = "black";
-            ctx.textAlign = "center";
-            ctx.fillText(found.value, canvas.width/2, qrCanvas.height + 25);
+            ctx.fillText(found.value, canvas.width/2, qrCanvas.height + 40 + 20);
         }
 
         qrDiv.appendChild(canvas);
