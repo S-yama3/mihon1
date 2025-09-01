@@ -8,18 +8,40 @@
 <style>
   body {
     display: flex;
-    justify-content: center;
+    flex-direction: column;
+    justify-content: flex-start;
     align-items: center;
     min-height: 100vh;
-    flex-direction: column;
     font-family: sans-serif;
     padding: 10px;
     box-sizing: border-box;
   }
-  #qrcode { margin: 20px 0; }
-  input { font-size: 16px; padding: 8px; margin-bottom: 10px; width: 90%; max-width: 400px; }
-  button { font-size: 16px; padding: 8px 12px; margin: 5px; }
-  #inputValue, #sheetValue { margin-top: 5px; font-size: 18px; text-align: center; word-break: break-word; }
+  #buttonArea {
+    display: flex;
+    gap: 10px;
+    margin: 10px 0;
+  }
+  #qrcode {
+    margin-top: auto; /* ページ最下部に移動 */
+    margin-bottom: 20px;
+  }
+  input {
+    font-size: 16px;
+    padding: 8px;
+    margin-bottom: 10px;
+    width: 90%;
+    max-width: 400px;
+  }
+  button {
+    font-size: 16px;
+    padding: 8px 12px;
+  }
+  #inputValue, #sheetValue {
+    margin-top: 5px;
+    font-size: 18px;
+    text-align: center;
+    word-break: break-word;
+  }
   @media (max-width: 480px) {
     #qrcode canvas { width: 80vw !important; height: auto !important; }
   }
@@ -29,12 +51,15 @@
 
 <h2>IDを入力</h2>
 <input type="text" id="userid" placeholder="半角英数字で入力">
-<button id="generateBtn" disabled>QR生成</button>
-<button id="downloadBtn" style="display:none;" onclick="downloadQR()">QR保存</button>
 
-<div id="qrcode"></div>
+<div id="buttonArea">
+  <button id="generateBtn" disabled>ＱＲ生成</button>
+  <button id="downloadBtn" style="display:none;" onclick="downloadQR()">ＱＲ保存</button>
+</div>
+
 <div id="inputValue"></div>
 <div id="sheetValue"></div>
+<div id="qrcode"></div>
 
 <script>
 // スプレッドシートCSV URL
