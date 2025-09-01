@@ -124,14 +124,21 @@ function generateQR() {
 
 document.getElementById("generateBtn").addEventListener("click", generateQR);
 
-// QR保存
+// QR保存（ダウンロード後にポップアップ表示）
 document.getElementById("downloadBtn").addEventListener("click", () => {
     const canvas = document.querySelector("#qrcode canvas");
-    if(!canvas) return alert("QRコードが生成されていません");
+    if(!canvas) {
+        alert("QRコードが生成されていません");
+        return;
+    }
+
     const link = document.createElement("a");
     link.href = canvas.toDataURL("image/png");
     link.download = "入場QR.png";
     link.click();
+
+    // 保存完了メッセージ
+    alert("QR画像がダウンロードフォルダに保存されました");
 });
 
 // ======================
