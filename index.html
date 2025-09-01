@@ -14,6 +14,7 @@
     font-family: sans-serif;
     padding: 10px;
     min-height: 100vh;
+    background-color: #87ceeb; /* 水色背景 */
   }
   #buttonArea {
     display: flex;
@@ -89,16 +90,21 @@ function generateQR() {
     QRCode.toCanvas(inputVal.toUpperCase(), { width: 250 }, function(err, qrCanvas){
         if(err) return console.error(err);
 
-        // Canvas作成してQRをコピー
         const canvas = document.createElement("canvas");
         const ctx = canvas.getContext("2d");
 
-        // 文字領域を2行分確保
+        const textHeight = 40*2; // 文字2行分
         canvas.width = qrCanvas.width;
-        canvas.height = qrCanvas.height + 40*2;
+        canvas.height = qrCanvas.height + textHeight;
 
+        // QR描画
         ctx.drawImage(qrCanvas, 0, 0);
 
+        // 文字部分背景を白に
+        ctx.fillStyle = "white";
+        ctx.fillRect(0, qrCanvas.height, canvas.width, textHeight);
+
+        // 文字描画
         ctx.font = "16px sans-serif";
         ctx.fillStyle = "black";
         ctx.textAlign = "center";
@@ -106,7 +112,7 @@ function generateQR() {
         // 1行目：入力ID
         ctx.fillText(inputVal.toUpperCase(), canvas.width/2, qrCanvas.height + 20);
 
-        // 2行目：スプレッドシートの値
+        // 2行目：対応値
         if(found){
             ctx.fillText(found.value, canvas.width/2, qrCanvas.height + 40 + 20);
         }
