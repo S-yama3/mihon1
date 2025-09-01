@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>入場QR生成</title>
 <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+<!-- QRコード読み取り用ライブラリ -->
+<script src="https://unpkg.com/html5-qrcode/minified/html5-qrcode.min.js"></script>
 <style>
   body {
     display: flex;
@@ -22,7 +24,7 @@
     margin: 10px 0;
   }
   #qrcode {
-    margin-top: auto; /* ページ最下部に移動 */
+    margin-top: auto;
     margin-bottom: 20px;
   }
   input {
@@ -45,17 +47,29 @@
   @media (max-width: 480px) {
     #qrcode canvas { width: 80vw !important; height: auto !important; }
   }
+  /* QR読み取りエリア（デフォルト非表示） */
+  #reader {
+    width: 90%;
+    max-width: 400px;
+    margin: 15px 0;
+    display: none;
+  }
 </style>
 </head>
 <body>
 
-<h2>見本市入場用ＱＲコード生成<br><br>見本市コードを入力</h2>
-<input type="text" id="userid" placeholder="半角英数字で入力してください">
+<h2>IDを入力 or QR読取</h2>
+<input type="text" id="userid" placeholder="半角英数字で入力">
 
+<!-- ボタン群 -->
 <div id="buttonArea">
-  <button id="generateBtn" disabled>ＱＲ生成</button>
-  <button id="downloadBtn" style="display:none;" onclick="downloadQR()">ＱＲ保存</button>
+  <button id="cameraBtn">QR読取開始</button>
+  <button id="generateBtn" disabled>QR生成</button>
+  <button id="downloadBtn" style="display:none;" onclick="downloadQR()">QR保存</button>
 </div>
+
+<!-- カメラ映像表示 -->
+<div id="reader"></div>
 
 <div id="inputValue"></div>
 <div id="sheetValue"></div>
@@ -102,14 +116,12 @@ function generateQR() {
         return;
     }
 
-    // 検索用は大文字変換
     const searchVal = inputVal.toUpperCase();
     const found = sheetData.find(item => item.id.toUpperCase() === searchVal);
 
     document.getElementById("inputValue").innerText = "入力ID: " + inputVal;
 
     if (found) {
-        // QR生成（大文字化）
         const qrcodeDiv = document.getElementById("qrcode");
         qrcodeDiv.innerHTML = "";
         QRCode.toCanvas(inputVal.toUpperCase(), { width: 250 }, function(err, canvas) {
@@ -119,12 +131,10 @@ function generateQR() {
                 return;
             }
             qrcodeDiv.appendChild(canvas);
-            // 保存ボタン表示
             document.getElementById("downloadBtn").style.display = "inline-block";
         });
         document.getElementById("sheetValue").innerText = "対応値: " + found.value;
     } else {
-        // 未登録時
         document.getElementById("qrcode").innerHTML = "";
         document.getElementById("sheetValue").innerText = "未登録です";
         document.getElementById("downloadBtn").style.display = "none";
@@ -143,9 +153,37 @@ function downloadQR() {
     link.download = "入場QR.png";
     link.click();
 }
+
+// ======================
+// QRコード読取機能追加
+// ======================
+let html5QrCode;
+document.getElementById("cameraBtn").addEventListener("click", () => {
+    const readerDiv = document.getElementById("reader");
+
+    // 初回クリック時のみインスタンス作成
+    if (!html5QrCode) {
+        html5QrCode = new Html5Qrcode("reader");
+    }
+
+    // カメラ表示
+    readerDiv.style.display = "block";
+
+    html5QrCode.start(
+        { facingMode: "environment" }, // アウトカメラ
+        { fps: 10, qrbox: 250 },
+        (decodedText, decodedResult) => {
+            document.getElementById("userid").value = decodedText;
+            generateQR(); // 自動でQR生成
+
+            // 🔴 読み取り後にカメラ停止
+            html5QrCode.stop().then(() => {
+                readerDiv.style.display = "none"; // カメラ枠も非表示
+            }).catch(err => console.error("カメラ停止エラー:", err));
+        }
+    ).catch(err => console.error("カメラ起動エラー:", err));
+});
 </script>
 
 </body>
 </html>
-
-
