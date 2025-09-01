@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>入場QR生成</title>
 <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
-<!-- QRコード読み取り用ライブラリ -->
 <script src="https://unpkg.com/html5-qrcode/minified/html5-qrcode.min.js"></script>
 <style>
   body {
@@ -47,7 +46,6 @@
   @media (max-width: 480px) {
     #qrcode canvas { width: 80vw !important; height: auto !important; }
   }
-  /* QR読み取りエリア（デフォルト非表示） */
   #reader {
     width: 90%;
     max-width: 400px;
@@ -68,7 +66,7 @@
   <button id="downloadBtn" style="display:none;" onclick="downloadQR()">QR保存</button>
 </div>
 
-<!-- カメラ映像表示 -->
+<!-- カメラ映像 -->
 <div id="reader"></div>
 
 <div id="inputValue"></div>
@@ -99,10 +97,9 @@ function isHalfWidth(str) {
     return /^[\x20-\x7E]+$/.test(str);
 }
 
-// ボタンイベント
+// QR生成
 document.getElementById("generateBtn").addEventListener("click", generateQR);
 
-// QR生成関数
 function generateQR() {
     const inputVal = document.getElementById("userid").value.trim();
 
@@ -141,7 +138,7 @@ function generateQR() {
     }
 }
 
-// QR保存関数
+// QR保存
 function downloadQR() {
     const canvas = document.querySelector("#qrcode canvas");
     if (!canvas) {
@@ -155,33 +152,41 @@ function downloadQR() {
 }
 
 // ======================
-// QRコード読取機能追加
+// QRコード読取機能
 // ======================
 let html5QrCode;
+
 document.getElementById("cameraBtn").addEventListener("click", () => {
     const readerDiv = document.getElementById("reader");
 
-    // 初回クリック時のみインスタンス作成
     if (!html5QrCode) {
         html5QrCode = new Html5Qrcode("reader");
     }
 
-    // カメラ表示
-    readerDiv.style.display = "block";
+    // 利用可能なカメラ一覧を取得
+    Html5Qrcode.getCameras().then(cameras => {
+        if (cameras && cameras.length) {
+            // アウトカメラがあれば優先、なければ最初のカメラ
+            const cameraId = cameras.length > 1 ? cameras[1].id : cameras[0].id;
 
-    html5QrCode.start(
-        { facingMode: "environment" }, // アウトカメラ
-        { fps: 10, qrbox: 250 },
-        (decodedText, decodedResult) => {
-            document.getElementById("userid").value = decodedText;
-            generateQR(); // 自動でQR生成
+            readerDiv.style.display = "block";
+            html5QrCode.start(
+                cameraId,
+                { fps: 10, qrbox: 250 },
+                (decodedText) => {
+                    document.getElementById("userid").value = decodedText;
+                    generateQR();
 
-            // 🔴 読み取り後にカメラ停止
-            html5QrCode.stop().then(() => {
-                readerDiv.style.display = "none"; // カメラ枠も非表示
-            }).catch(err => console.error("カメラ停止エラー:", err));
+                    // 読み取り後にカメラ停止
+                    html5QrCode.stop().then(() => {
+                        readerDiv.style.display = "none";
+                    }).catch(err => console.error("カメラ停止エラー:", err));
+                }
+            ).catch(err => console.error("カメラ起動エラー:", err));
+        } else {
+            alert("利用可能なカメラが見つかりませんでした");
         }
-    ).catch(err => console.error("カメラ起動エラー:", err));
+    }).catch(err => console.error("カメラ一覧取得エラー:", err));
 });
 </script>
 
