@@ -87,6 +87,12 @@ function generateQR() {
     const qrDiv = document.getElementById("qrcode");
     qrDiv.innerHTML = "";
 
+    // 未登録なら QR を作らず終了
+    if(!found){
+        document.getElementById("downloadBtn").style.display = "none";
+        return;
+    }
+
     QRCode.toCanvas(inputVal.toUpperCase(), { width: 250 }, function(err, qrCanvas){
         if(err) return console.error(err);
 
@@ -113,9 +119,7 @@ function generateQR() {
         ctx.fillText(inputVal.toUpperCase(), canvas.width/2, qrCanvas.height + 20);
 
         // 2行目：対応値
-        if(found){
-            ctx.fillText(found.value, canvas.width/2, qrCanvas.height + 40 + 20);
-        }
+        ctx.fillText(found.value, canvas.width/2, qrCanvas.height + 40);
 
         qrDiv.appendChild(canvas);
         document.getElementById("downloadBtn").style.display = "inline-block";
@@ -145,7 +149,7 @@ document.getElementById("downloadBtn").addEventListener("click", () => {
 // QRコード読取機能
 // ======================
 let html5QrCode;
-document.getElementById("cameraBtn").addEventListener("click", async () => {
+document.getElementById("cameraBtn")?.addEventListener("click", async () => {
     const readerDiv = document.getElementById("reader");
     readerDiv.style.display = "block";
 
