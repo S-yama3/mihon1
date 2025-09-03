@@ -136,13 +136,29 @@ document.getElementById("downloadBtn").addEventListener("click", () => {
         return;
     }
 
+    // 日付（yyyymmddhhmm）を作成
+    const now = new Date();
+    const yyyymmddhhmm =
+        now.getFullYear().toString() +
+        String(now.getMonth() + 1).padStart(2, "0") +
+        String(now.getDate()).padStart(2, "0") +
+        String(now.getHours()).padStart(2, "0") +
+        String(now.getMinutes()).padStart(2, "0");
+
+    // 入力値を取得（大文字に統一）
+    const inputVal = document.getElementById("userid").value.trim().toUpperCase() || "UNKNOWN";
+
+    // ファイル名を組み立て
+    const fileName = `${yyyymmddhhmm}_${inputVal}.png`;
+
+    // ダウンロード処理
     const link = document.createElement("a");
     link.href = canvas.toDataURL("image/png");
-    link.download = "入場QR.png";
+    link.download = fileName;
     link.click();
 
     // 保存完了メッセージ
-    alert("QR画像がダウンロードフォルダに保存されました");
+    alert(`QR画像がダウンロードフォルダに保存されました\nファイル名: ${fileName}`);
 });
 
 // ======================
